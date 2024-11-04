@@ -1,78 +1,37 @@
 import net from "net";
 import fs from "fs";
 
-const HOST = "localhost";
-const PORT = 6969;
+const host = "localhost";
+const port = 6969;
 
 /**
  * @param {string} filePath
  **/
 function client(filePath) {
     const client = new net.Socket();
-    const fileType = filePath.split('.').pop()
 
     client.on('error', function(error) {
-        console.error(`Could not connect to server on ${HOST}:${PORT}. Error: ${error.message}`);
+        console.error(`Could not connect to server on ${host}:${port}. Error: ${error.message}`);
+        client.end();
     });
 
-    client.connect(PORT, HOST, function() {
-        console.log(`Connected to server on : ${HOST}:${PORT}`);
+    client.connect(port, host, function() {
+        console.log(`Connected to server on : ${host}:${port}`);
 
-        fs.stat(filePath, (err, stats) => {
+        fs.readFile(filePath, (err, data) => {
             if (err) {
-                console.error(`Error getting file stats : ${err}`);
+                console.error(`Error reading file ${err}`);
                 client.destroy();
                 return;
             }
 
-            const fileSize = stats.size;
-            const header = createHeader(fileType, fileSize);
-
-            client.write(header, (err) => {
-                if (err) {
-                    console.error(`Error sending header : ${err}`);
-                    client.destroy();
-                    return;
-                }
-            });
-
-            fs.readFile(filePath, (err, data) => {
-                if (err) {
-                    console.error(`Error reading file : ${err}`);
-                    client.destroy();
-                    return;
-                }
-
-                client.write(data, (err) => {
-                    if (err) {
-                        console.error(`Error sending file data : ${err}`);
-                        client.destroy();
-                    } else {
-                        console.log("File data sent");
-                    }
-                });
-            });
+            client.write(data);
         });
     });
 
     client.on("close", function() {
         console.log("Connection closed.");
     });
-}
-
-/**
- * @param {string} fileType
- * @param {number} fileSize
- * @returns {Buffer}
- **/
-function createHeader(fileType, fileSize) {
-    const fileTypeBuffer = Buffer.from(fileType + '\0');  
-    const fileSizeBuffer = Buffer.alloc(8);  
-    fileSizeBuffer.writeBigUInt64LE(BigInt(fileSize), 0);  
-
-    const header = Buffer.concat([Buffer.alloc(4), fileTypeBuffer, fileSizeBuffer]); 
-    header.writeUInt32LE(header.length, 0); 
-    return header;
 }
 
 function main() {

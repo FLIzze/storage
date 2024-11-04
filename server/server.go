@@ -8,6 +8,7 @@ import (
     "os"
     "time"
     "path/filepath"
+    "io"
 )
 
 var SAVEPATH = "./storage/"
@@ -27,20 +28,13 @@ func (client *Client) handleRequest() {
 
     var wholeFileContent []byte
 
-    // header := make([]byte, 20)
-
-    // byte, err := reader.ReadByte()
-    // if err != nil {
-    //     fmt.Println("Error")
-    //     return
-    // }
-    //
-    // fmt.Println(byte)
-
     for {
         message, err := reader.ReadBytes('\n')
         if err != nil {
-            fmt.Println(err)
+            if err != io.EOF {
+                client.conn.Write([]byte("Message received"))
+                fmt.Println(err)
+            }
             break
         }
 
@@ -48,10 +42,7 @@ func (client *Client) handleRequest() {
         client.conn.Write([]byte("Message received.\n"))
     }
 
-     
-
-    // saveFile(wholeFileContent)
-    // fmt.Println(wholeFileContent)
+    saveFile(wholeFileContent)
     client.conn.Close()
 }
 
