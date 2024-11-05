@@ -1,12 +1,14 @@
 import net from "net";
 import fs from "fs";
+import path from "path";
 
 const host = "localhost";
 const port = 6969;
 
-/**
- * @param {string} filePath
- **/
+const extension_len = 2;
+const file_name_len = 2;
+const data_len = 4;
+
 function client(filePath) {
     const client = new net.Socket();
 
@@ -16,16 +18,37 @@ function client(filePath) {
     });
 
     client.connect(port, host, function() {
-        console.log(`Connected to server on : ${host}:${port}`);
+        console.log(`Connected to server on: ${host}:${port}`);
 
         fs.readFile(filePath, (err, data) => {
             if (err) {
-                console.error(`Error reading file ${err}`);
+                console.error(`Error reading file: ${err}`);
                 client.destroy();
                 return;
             }
 
-            client.write(data);
+            const fileName = path.basename(filePath, path.extname(filePath)); 
+            const fileExtension = path.extname(filePath).slice(1); 
+
+            const dataSize = data.length; 
+            const fName = Buffer.byteLength(fileName);
+            const fExt = Buffer.byteLength(fileExtension);
+
+            const totalHeaderLen = extension_len + fExt + file_name_len + fName + data_len;
+            const header = Buffer.alloc(totalHeaderLen);
+
+            header.writeUInt16BE(fExt, 0);
+            header.write(fileExtension, extension_len);
+
+            header.writeUInt16BE(fName, extension_len + fExt);
+            header.write(fileName, extension_len + fExt + file_name_len);
+
+            header.writeUInt32BE(dataSize, extension_len + fExt + file_name_len + fName);
+
+            console.log(`Header : { fExt: ${fExt}, fileExtension: ${fileExtension}, fNameL ${fName}, fileName: ${fileName}, dataSize: ${dataSize} }`);
+
+            client.write(header); 
+            client.write(data); 
         });
     });
 
