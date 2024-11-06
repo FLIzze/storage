@@ -52,35 +52,30 @@ func GetHeader(reader *bufio.Reader) error {
         return err
     }
     extLen := binary.BigEndian.Uint16(extLenBytes)
-    fmt.Println(extLen)
 
     extNameBytes, err := u.Read(reader, extLen)
     if err != nil {
         return err
     }
     header.ExtensionType = string(extNameBytes)
-    fmt.Println(string(extNameBytes))
 
     fNameLenBytes, err := u.Read(reader, FILE_NAME_LEN)
     if err != nil {
         return err
     }
     fNameLen := binary.BigEndian.Uint16(fNameLenBytes)
-    fmt.Println(fNameLen)
 
     fNameBytes, err := u.Read(reader, fNameLen)
     if err != nil {
         return err
     }
     header.FileName = string(fNameBytes)
-    fmt.Println(string(fNameBytes))
 
     dLenBytes, err := u.Read(reader, DATA_LEN)
     if err != nil {
         return err
     }
     dataLen := binary.BigEndian.Uint32(dLenBytes)
-    fmt.Println(dataLen)
 
     fileContent, err := u.Read32(reader, dataLen)
     if err != nil {

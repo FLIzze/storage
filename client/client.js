@@ -1,6 +1,4 @@
 import net from "net";
-import fs from "fs";
-import path from "path";
 
 const host = "192.168.1.25";
 const port = 6969;
@@ -9,7 +7,11 @@ const extension_len = 2;
 const file_name_len = 2;
 const data_len = 4;
 
-function client(filePath) {
+/**
+ * @param {byte[]} fileData
+ * @param {string} fileExtName
+ **/
+export function uploadFile(fileData, fileExtName) {
     const client = new net.Socket();
 
     client.on('error', function(error) {
@@ -18,54 +20,31 @@ function client(filePath) {
     });
 
     client.connect(port, host, function() {
-        console.log(`Connected to server on: ${host}:${port}`);
+        if (!fileData || !fileExtName) {
+            console.error("Error reading file.");
+            client.destroy();
+        }
 
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                console.error(`Error reading file: ${err}`);
-                client.destroy();
-                return;
-            }
+        const [fileName, fileExtension] = fileExtName.split(".");
 
-            const fileName = path.basename(filePath, path.extname(filePath)); 
-            const fileExtension = path.extname(filePath).slice(1); 
+        const dataSize = fileData.length; 
+        const fName = Buffer.byteLength(fileName);
+        const fExt = Buffer.byteLength(fileExtension);
 
-            const dataSize = data.length; 
-            const fName = Buffer.byteLength(fileName);
-            const fExt = Buffer.byteLength(fileExtension);
+        const totalHeaderLen = extension_len + fExt + file_name_len + fName + data_len;
+        const header = Buffer.alloc(totalHeaderLen);
 
-            const totalHeaderLen = extension_len + fExt + file_name_len + fName + data_len;
-            const header = Buffer.alloc(totalHeaderLen);
+        header.writeUInt16BE(fExt, 0);
+        header.write(fileExtension, extension_len);
 
-            header.writeUInt16BE(fExt, 0);
-            header.write(fileExtension, extension_len);
+        header.writeUInt16BE(fName, extension_len + fExt);
+        header.write(fileName, extension_len + fExt + file_name_len);
 
-            header.writeUInt16BE(fName, extension_len + fExt);
-            header.write(fileName, extension_len + fExt + file_name_len);
+        header.writeUInt32BE(dataSize, extension_len + fExt + file_name_len + fName);
 
-            header.writeUInt32BE(dataSize, extension_len + fExt + file_name_len + fName);
+        client.write(header); 
+        client.write(fileData); 
 
-            console.log(`Header : { fExt: ${fExt}, fileExtension: ${fileExtension}, fNameL ${fName}, fileName: ${fileName}, dataSize: ${dataSize} }`);
-
-            client.write(header); 
-            client.write(data); 
-        });
-    });
-
-    client.on("close", function() {
-        console.log("Connection closed.");
+        console.log(`Sent ${fileName}.`);
     });
 }
-
-function main() {
-    const filePath = process.argv.slice(2)[0];
-
-    if (!filePath) {
-        console.error("You must provide a file path as an argument.");
-        process.exit(1);
-    }
-
-    client(filePath);
-}
-
-main();

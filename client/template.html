@@ -18,17 +18,32 @@
         <p id="displayError" class="error"></p>
         <p id="displaySuccess" class="success"></p>
 
-        <script>
+        <script type="module">
             window.onload = function() {
                 document.getElementById('selectedFile').value = ""; 
             };
 
             document.getElementById('selectedFile').addEventListener('change', function(event) {
                 const file = event.target.files[0];
-                const fileInfo = `
-                <p>${file.name}</p>
-                `;
-                document.getElementById('displayContent').innerHTML = fileInfo;
+
+                if (!file) {
+                    const error = "<p>Error with file.</p>"
+                    document.getElementById('displayError').innerHTML = error;
+                    return;
+                }
+
+                let fileInfo = `<p>${file.name}</p>`;
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fileInfo += `<img src="${e.target.result}" alt="${file.name}" style="max-width: 300px; max-height: 300px;">`;
+                        document.getElementById('displayContent').innerHTML = fileInfo;
+                    };
+                    reader.readAsDataURL(file); 
+                } else {
+                    document.getElementById('displayContent').innerHTML = fileInfo;
+                }
             });
 
             document.getElementById('submitFile').addEventListener('click', function(event) {
@@ -47,6 +62,21 @@
                 const error = "";
                 document.getElementById('displaySuccess').innerHTML = success;
                 document.getElementById('displayError').innerHTML = error;
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch("http://localhost:6969/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => reponse.json())
+                .then(data => {
+                    console.log("Success : ", data);
+                })
+                .catch((error) => {
+                    console.error("Error : ", error);
+                });
             });
         </script>
     </body>

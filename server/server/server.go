@@ -25,7 +25,9 @@ func (server *Server) Run() {
     for {
         conn, err := listener.Accept()
         if err != nil {
-            log.Fatal(err)
+            // log.Fatal(err)
+            fmt.Println(err);
+            return;
         }
 
         client := &c.Client{
