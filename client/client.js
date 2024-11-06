@@ -2,7 +2,7 @@ import net from "net";
 import fs from "fs";
 import path from "path";
 
-const host = "localhost";
+const host = "192.168.1.25";
 const port = 6969;
 
 const extension_len = 2;

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Storage</title>
+        <link href="./style.css" rel="stylesheet">
+    </head>
+    <body>
+        <form>
+            <input type="file" id="selectedFile" style="display: none;" />
+            <input type="button" value="Browse..." onclick="document.getElementById('selectedFile').click();" />        
+            <button type="submit" id="submitFile">Send data</button>
+        </form>
+
+        <div id="displayContent"></div>
+
+        <p id="displayError" class="error"></p>
+        <p id="displaySuccess" class="success"></p>
+
+        <script>
+            window.onload = function() {
+                document.getElementById('selectedFile').value = ""; 
+            };
+
+            document.getElementById('selectedFile').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const fileInfo = `
+                <p>${file.name}</p>
+                `;
+                document.getElementById('displayContent').innerHTML = fileInfo;
+            });
+
+            document.getElementById('submitFile').addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const fileInput = document.getElementById('selectedFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    const error = "<p>You need to select a file before uploading it.</p>"
+                    document.getElementById('displayError').innerHTML = error;
+                    return;
+                }
+
+                const success = "<p>Document uploaded !</p>";
+                const error = "";
+                document.getElementById('displaySuccess').innerHTML = success;
+                document.getElementById('displayError').innerHTML = error;
+            });
+        </script>
+    </body>
+</html>
