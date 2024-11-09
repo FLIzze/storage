@@ -1,14 +1,17 @@
 {{ block "index" . }}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title></title>
-        <link href="css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        test 
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Storage</title>
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+</head>
+<body>
+    <form method="POST" enctype="multipart/form-data" hx-post="/sendFile">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">Submit</button> 
+    </form>
+</body>
 </html>
-{{ end }}   
+{{ end }}

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"text/template"
-    "io"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+    sf "client/sendFile"
 )
 
 type Template struct {
@@ -28,7 +30,18 @@ func main() {
     e.Renderer = newTemplate()
     
     e.GET("/", func(c echo.Context) error {
-        return c.Render(200, "index", "World")
+        return c.Render(200, "index", nil)
+    })
+
+    e.POST("/sendFile", func(c echo.Context) error {
+        file, err := c.FormFile("file")
+        if err != nil {
+            fmt.Println(err)
+            return err
+        }
+
+        sf.SendFileData(file)
+        return c.Render(200, "index", nil)
     })
 
     e.Logger.Fatal(e.Start(":1234"))
