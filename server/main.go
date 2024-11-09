@@ -6,7 +6,7 @@ import (
 
 func main() {
     server := &s.Server{
-        Host: "192.168.1.25",
+        Host: "localhost",
         Port: "6969",
     }
 

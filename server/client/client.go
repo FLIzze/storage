@@ -3,6 +3,7 @@ package client
 import (
     "net"
     "bufio"
+    "fmt"
     h "server/header"
 )
 
@@ -11,6 +12,8 @@ type Client struct {
 }
 
 func (client *Client) HandleRequest() {
+    fmt.Println("Handling request")
+
     defer client.Conn.Close()
     reader := bufio.NewReader(client.Conn)
 
