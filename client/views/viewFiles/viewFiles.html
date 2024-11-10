@@ -5,17 +5,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Storage</title>
-    <link rel="stylesheet" href="styles.css"/>
     <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
 </head>
 <body>
-    <div class="bg">
+    <div>
         {{ range .Files }}
-        <img 
-            class="img"
-            src="{{ .FilePath }}{{ .FileName }}" 
-            alt="{{ .FileName }}"
-        />
+            {{ if eq .FileType "audio" }}
+                <audio 
+                     class="audio"
+                     src="{{ .FilePath }}{{ .FileName }}" 
+                     controls
+                 ></audio>
+            {{ else if eq .FileType "image" }}
+                <img 
+                    class="img"
+                    src="{{ .FilePath }}{{ .FileName }}" 
+                    alt="{{ .FileName }}"
+                />
+            {{ else if eq .FileType "video" }}
+                <video 
+                    class="video"
+                    src="{{ .FilePath }}{{ .FileName }}" 
+                    controls
+                ></video>
+            {{ else }}
+                <p>Unsupported file type for {{ .FileName }}</p>
+            {{ end }}
         {{ end }}
     </div>
 </body>

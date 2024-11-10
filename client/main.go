@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
     "os"
+    "strings"
     "html/template"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -21,6 +22,7 @@ type Files struct {
 type File struct {
     FilePath string
     FileName string
+    FileType string
 }
 
 
@@ -39,14 +41,15 @@ func main() {
     e.Use(middleware.Logger())
 
     e.Static("/storage", "../server/storage")
+    e.Static("/static", "public")
 
     e.Renderer = newTemplate()
     
-    e.GET("/addFile", func(c echo.Context) error {
+    e.GET("/manageFile", func(c echo.Context) error {
         return c.Render(200, "addFile", nil)
     })
 
-    e.GET("/viewFiles", func(c echo.Context) error {
+    e.GET("/", func(c echo.Context) error {
         filesPath := "../server/storage/"
 
         fsFiles, err := os.ReadDir(filesPath)
@@ -58,7 +61,16 @@ func main() {
         files := Files{}
         
         for _, file := range fsFiles {
-            files.Files = append(files.Files, File{FilePath: "/storage/", FileName: file.Name()})
+            fileType := strings.Split(file.Name(), ".")[1]
+            if fileType == "jpg" || fileType == "jpeg" || fileType == "png"  || fileType == "webp" {
+                fileType = "image"
+            } else if fileType == "mp4" || fileType == "avi" || fileType == "mkv" {
+                fileType = "video"
+            } else if fileType == "mp3" || fileType == "wav" {
+                fileType = "audio"
+            }
+
+            files.Files = append(files.Files, File{FilePath: "/storage/", FileName: file.Name(), FileType: fileType})
         }
 
         return c.Render(200, "viewFiles", files)
